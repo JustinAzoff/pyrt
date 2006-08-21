@@ -1,8 +1,8 @@
 class Ticket:
     def __init__(self, rtclient):
         self.rt = rtclient
-    def search(self, query=None,format=''):
-        page = self.rt._do('search/ticket', query=query, format=format)
+    def search(self, query=None,format='',orderby='id'):
+        page = self.rt._do('search/ticket', query=query, format=format, orderby=orderby)
         
         data = self.rt.split_res(page)
 
