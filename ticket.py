@@ -21,6 +21,6 @@ class Ticket:
 
     def find_open(self, **kwargs):
         """Find any ticket whose status is new, open, or stalled"""
-        return self.find_by_status(['new','open','stalled'])
+        return self.find_by_status(['new','open','stalled'], **kwargs)
 
 __all__ = ["Ticket"]
