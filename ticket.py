@@ -23,4 +23,16 @@ class Ticket:
         """Find any ticket whose status is new, open, or stalled"""
         return self.find_by_status(['new','open','stalled'], **kwargs)
 
+    def find_by_cf(self, mapping, **kwargs):
+        crit = []
+        t = "'CF.{%s}' = '%s'"
+        for k, v in mapping.items():
+            crit.append(t % (k,v))
+
+        q = " AND ".join(crit)
+        return self.search(q, **kwargs)
+
+    def find_by_ip(self, ip, **kwargs):
+        return self.find_by_cf({'ip':ip}, **kwargs)
+
 __all__ = ["Ticket"]
