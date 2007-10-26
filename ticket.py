@@ -11,6 +11,8 @@ class Ticket:
         self.rt = rtclient
     def search(self, query=None,format='',orderby='id'):
         page = self.rt._do('search/ticket', query=query, format=format, orderby=orderby)
+        if 'No matching results' in page:
+            return []
         
         data = self.rt.split_res(page)
 
