@@ -20,7 +20,7 @@ class RTClient:
     def _make_url(self, action):
         return "%s/REST/%s/%s" % (self.url, REST_VERSION, action)
 
-    def _do(self, action, **args):
+    def _do(self, action, data=None, **args):
         """Call url with args as query args and return the result"""
 
         for k,v in args.items():
@@ -29,13 +29,14 @@ class RTClient:
                 args[k[:-1]]=v
         
         url  = self._make_url(action)
-        data = urllib.urlencode(args)
+        if not data:
+            data = urllib.urlencode(args)
         res  = self.opener.open(url, data).read()
 
         return res
 
     def split_res(self, res):
-        ret = res.splitlines()
+        ret = res.split("\n")
         return ret[2:]
 
     def login(self):
