@@ -33,26 +33,28 @@ def parse(lines):
         values = [v[min:] for v in values]
         values.insert(0, value)
         value = '\n'.join(values)
+        if value=='': value=None
         hash[field] = value 
         l+=1
-    hash['comments'] = comments
+    #hash['comments'] = comments
     return hash
 
 def generate(fields):
     lines = []
     for k,v in fields.items():
-        v = str(v)
         if k == 'cf': continue
-        if '\n' not in v:
+        if '\n' not in str(v):
+            if v is None: v=''
             lines.append("%s: %s" % (k,v))
         else:
-            stuff = v.splitlines()
+            stuff = v.split('\n')
             lines.append("%s: %s" % (k,stuff[0]))
             for s in stuff[1:]:
                 lines.append("   %s" % s)
 
     if 'cf' in fields:
         for k, v in fields['cf'].items():
+            if v is None: v=''
             lines.append("CF-%s: %s" % (k,v))
 
     lines.append('')
