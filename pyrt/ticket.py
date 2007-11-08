@@ -17,11 +17,13 @@ class Ticket:
         data = self.rt.split_res(page)
 
         if format=='i':
-            return data
+            return [x for x in data.split() if x]
+        if format=='l':
+            return forms.parse(data)
 
         if not format:
             ret = []
-            for line in data:
+            for line in data.splitlines():
                 if line:
                     ret.append(line.split(': ', 1))
             return ret
@@ -61,7 +63,7 @@ class Ticket:
     def show(self):
         page = self.rt._do('ticket/show', id=self.id)
         data = self.rt.split_res(page)
-        return forms.parse(data)
+        return forms.parse(data)[0]
     def create(self, **fields):
         self.id = 'new'
         out = self.edit(**fields)

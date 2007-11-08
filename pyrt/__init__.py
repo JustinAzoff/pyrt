@@ -37,7 +37,7 @@ class RTClient:
 
     def split_res(self, res):
         ret = res.split("\n")
-        return ret[2:]
+        return '\n'.join(ret[2:])
 
     def login(self):
         self._do('/') #need this to start the session first? O.o

@@ -12,7 +12,7 @@ def do_test_generate_and_parse(idict,exp=None):
     if not exp:
         exp = idict
     out = forms.generate(idict)
-    output = forms.parse(out.split('\n'))
+    output = forms.parse(out)[0]
     check_dict(output, exp)
 
 def test_generate_and_parse():

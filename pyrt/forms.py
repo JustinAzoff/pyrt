@@ -1,6 +1,7 @@
 import re
 whitespace = re.compile("(\s+)")
-def parse(lines):
+def parse_one_form(data):
+    lines = data.split('\n')
     state = 0
     comments = []
     l = 0
@@ -38,6 +39,13 @@ def parse(lines):
         l+=1
     #hash['comments'] = comments
     return hash
+
+def parse(data):
+    if '\n--\n\n' in data:
+        forms = data.split("\n--\n\n")
+        return [parse_one_form(f) for f in forms]
+    else:
+        return [parse_one_form(data)]
 
 def generate(fields):
     lines = []
