@@ -79,4 +79,20 @@ class Ticket:
         content = forms.generate(fields)
         page = self.rt._do('ticket/edit', content=content)
         return page
+
+    def attachment_ids(self):
+        page = self.rt._do('ticket/%d/attachments' % self.id)
+        data = self.rt.split_res(page)
+        r =  forms.parse(data)
+        if r:
+            r = r[0]
+            attachments = r['Attachments']
+            return [int(x) for x in re.findall('(\d+):', attachments)]
+
+    def get_attachment(self, attachment_id):
+        page = self.rt._do('ticket/%d/attachments/%d' % (self.id, attachment_id))
+        data = self.rt.split_res(page)
+        r =  forms.parse(data)
+        if r:
+            return r[0]
 __all__ = ["Ticket"]
