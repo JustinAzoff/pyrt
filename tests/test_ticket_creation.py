@@ -26,6 +26,9 @@ def test_create_ticket():
                 'jack':     'test jack',
                 'mac':      '00:11:22:33:44:55',
             })
+    i = ticket.id
+    i = int(i)
+    assert i > 100
 
 def test_search_ticket_i_just_made():
     c=RTClient('http://localhost/rt/', 'djf','djfrtpassword')
@@ -38,6 +41,18 @@ def test_search_ticket_i_just_made():
     assert ticket['CF-mac']        == '00:11:22:33:44:55'
     assert ticket['CF-department'] == 'test department'
     assert ticket['Subject']       == SUBJ
+
+    yield body_case, ticket
+
+def body_case(tick):
+    c=RTClient('http://localhost/rt/', 'djf','djfrtpassword')
+    id = tick['id']
+    t = c.ticket.get(id)
+    attachments = t.attachment_ids()
+    first = attachments[0]
+    content = t.get_attachment(first)['Content']
+    assert content.rstrip() == TEXT.rstrip()
+
 
 def test_close_that_ticket():
     c=RTClient('http://localhost/rt/', 'djf','djfrtpassword')

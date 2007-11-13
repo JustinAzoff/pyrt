@@ -58,6 +58,8 @@ class Ticket:
 
 
     def get(self, id):
+        if 'ticket/' in id:
+            id = int(id.replace('ticket/',''))
         self.id = id
         return self
     def show(self):
