@@ -1,15 +1,51 @@
 import re
 import forms
 
-def and_(*crit):
+def and_(crit):
     return '(' + ' AND '.join(crit) + ')'
-def or_(*crit):
+def or_(crit):
     return '(' + ' OR '.join(crit)  + ')'
+
+class Field:
+    def __init__(self, name):
+        self.name=name
+
+    def __eq__(self, other):
+        return self._compare(self.name, other, '=')
+    def __ne__(self, other):
+        return self._compare(self.name, other, '!=')
+    def __gt__(self, other):
+        return self._compare(self.name, other, '>')
+    def __lt__(self, other):
+        return self._compare(self.name, other, '<')
+
+    def like(self, other):
+        return self._compare(self.name, other, 'LIKE')
+    contains = like
+
+
+    def _compare(self, name, other, op):
+        t = "'%s' %s '%s'"
+        return t % (name, op, other)
+
+class FieldWrapper:
+    def __init__(self, custom=False):
+        self.custom=custom
+        self.cf = None
+    def __getattr__(self, attr):
+        if self.custom:
+            return Field('CF.{%s}' % attr)
+        else:
+            return Field(attr)
 
 class Ticket:
     def __init__(self, rtclient):
         self.rt = rtclient
+        self.c = FieldWrapper()
+        self.c.cf = FieldWrapper(custom=True)
+
     def search(self, query=None,format='',orderby='id'):
+        print query
         page = self.rt._do('search/ticket', query=query, format=format, orderby=orderby)
         if 'No matching results' in page:
             return []
@@ -29,28 +65,39 @@ class Ticket:
             return ret
  
     def find_by_status(self, status=[], **kwargs):
-        q = or_(*["status='%s'" % s for s in status])
+        q = or_([self.c.status==s for s in status])
         return self.search(query=q, **kwargs)
 
-    def find_open(self, mapping={}, **kwargs):
+    def find_open(self, query=[], **kwargs):
         """Find any ticket whose status is new, open, or stalled"""
-        q = or_(*["status='%s'" % s for s in ['new','open','stalled']])
+        q = or_([self.c.status==s for s in  ['new','open','stalled']])
         crit = [q]
 
-        t = "'%s' = '%s'"
-        for k, v in mapping.items():
-            crit.append(t % (k,v))
-        q = and_(*crit)
-        print q
+        crit.extend(query)
+        q = and_(crit)
         return self.search(query=q, **kwargs)
 
-    def find_by_cf(self, mapping, **kwargs):
+    def find_by(self, mapping, **kwargs):
+        """Helper function to find tickets based on a dictionary of search terms
+        >>> c.ticket.find_by({'owner':'justin'})
+        """
         crit = []
-        t = "'CF.{%s}' = '%s'"
         for k, v in mapping.items():
-            crit.append(t % (k,v))
+            comp = getattr(self.c,k)==v
+            crit.append(comp)
 
-        q = " AND ".join(crit)
+        q = and_(crit)
+        return self.search(q, **kwargs)
+    def find_by_cf(self, mapping, **kwargs):
+        """Helper function to find tickets based on a dictionary of search terms
+        >>> c.ticket.find_by_cf({'jack':'B-026A'})
+        """
+        crit = []
+        for k, v in mapping.items():
+            comp = getattr(self.c.cf,k)==v
+            crit.append(comp)
+
+        q = and_(crit)
         return self.search(q, **kwargs)
 
     def find_by_ip(self, ip, **kwargs):
@@ -97,4 +144,4 @@ class Ticket:
         r =  forms.parse(data)
         if r:
             return r[0]
-__all__ = ["Ticket"]
+__all__ = ["Ticket","and_","or_"]

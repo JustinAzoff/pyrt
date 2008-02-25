@@ -38,6 +38,8 @@ def parse_one_form(data):
         hash[field] = value 
         l+=1
     #hash['comments'] = comments
+    if 'id' in hash:
+        hash['id'] = hash['id'].replace('ticket/','')
     return hash
 
 def parse(data):
