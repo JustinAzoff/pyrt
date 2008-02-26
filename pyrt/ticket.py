@@ -42,7 +42,7 @@ class FieldWrapper:
         else:
             return Field(attr)
 
-class Ticket:
+class Ticket(object):
     def __init__(self, rtclient):
         self.rt = rtclient
         self.c = FieldWrapper()
@@ -165,4 +165,11 @@ class Ticket:
         r =  forms.parse(data)
         if r:
             return r[0]
+
+    def _get_attachments(self):
+        for a_id in self.get_attachment_ids():
+            yield self.get_attachment(a_id)
+    attachments = property(_get_attachments)
+
+
 __all__ = ["Ticket","and_","or_"]
