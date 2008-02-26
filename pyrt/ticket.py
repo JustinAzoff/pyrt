@@ -25,6 +25,10 @@ class Field:
 
 
     def _compare(self, name, other, op):
+        nullops = {'=': 'IS', '!=': 'IS NOT'}
+        if other is None:
+            other = 'NULL'
+            op = nullops[op]
         t = "'%s' %s '%s'"
         return t % (name, op, other)
 
@@ -105,15 +109,26 @@ class Ticket:
 
 
     def get(self, id):
-        if 'ticket/' in id:
+        """Fetch a ticket"""
+        if 'ticket/' in str(id):
             id = int(id.replace('ticket/',''))
-        self.id = id
-        return self
+        new_ticket = Ticket(self.rt)
+        new_ticket.id = id
+        return new_ticket
     def show(self):
+        """Return all the fields for this ticket"""
         page = self.rt._do('ticket/show', id=self.id)
         data = self.rt.split_res(page)
         return forms.parse(data)[0]
     def create(self, **fields):
+        """Create a new ticket
+           >>> rt.ticket.new(queue='trouble', subject=subject, requestor=requestor, Text=text,
+                   cf={
+                    'building': building_name,
+                    'room':     room_number,
+                   })
+        """
+
         self.id = 'new'
         out = self.edit(**fields)
         match = re.search("200 Ok\n\n.*Ticket (\d+) created",out, re.MULTILINE)
@@ -124,13 +139,18 @@ class Ticket:
         raise Exception("Error creating ticket %s" % out)
 
     def edit(self, **fields):
+        """Edit an existing ticket
+           >>> t = rt.ticket.get(123)
+           >>> t.edit(subject='new subject',Text='new comment')
+        """
         fields['id'] = self.id
         content = forms.generate(fields)
         page = self.rt._do('ticket/edit', content=content)
         return page
 
-    def attachment_ids(self):
-        page = self.rt._do('ticket/%d/attachments' % self.id)
+    def get_attachment_ids(self):
+        """Return a list of attachment ids for this ticket"""
+        page = self.rt._do('ticket/%s/attachments' % self.id)
         data = self.rt.split_res(page)
         r =  forms.parse(data)
         if r:
@@ -139,7 +159,8 @@ class Ticket:
             return [int(x) for x in re.findall('(\d+):', attachments)]
 
     def get_attachment(self, attachment_id):
-        page = self.rt._do('ticket/%d/attachments/%d' % (self.id, attachment_id))
+        """Fetch a specific attachment associated with this ticket"""
+        page = self.rt._do('ticket/%s/attachments/%d' % (self.id, attachment_id))
         data = self.rt.split_res(page)
         r =  forms.parse(data)
         if r:
