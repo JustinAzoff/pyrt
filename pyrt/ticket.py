@@ -141,12 +141,32 @@ class Ticket(object):
     def edit(self, **fields):
         """Edit an existing ticket
            >>> t = rt.ticket.get(123)
-           >>> t.edit(subject='new subject',Text='new comment')
+           >>> t.edit(subject='new subject')
         """
         fields['id'] = self.id
         content = forms.generate(fields)
         page = self.rt._do('ticket/edit', content=content)
         return page
+
+    def _comment(self, action, message, cc=None, bcc=None):
+        fields = {
+            'Action': action,
+            'Ticket': self.id,
+            'Cc'    : cc,
+            'Bcc'   : bcc,
+            'Text'  : message,
+            }
+        content = forms.generate(fields)
+        page = self.rt._do('ticket/%s/comment' % self.id, content=content)
+        return page
+
+    def comment(self, message, cc=None, bcc=None):
+        """Comment on a ticket"""
+        return self._comment('comment', message, cc, bcc)
+
+    def correspond(self, message, cc=None, bcc=None):
+        """Correspond on a ticket"""
+        return self._comment('correspond', message, cc, bcc)
 
     def get_attachment_ids(self):
         """Return a list of attachment ids for this ticket"""
