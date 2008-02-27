@@ -168,6 +168,21 @@ class Ticket(object):
         """Correspond on a ticket"""
         return self._comment('correspond', message, cc, bcc)
 
+    def _ticket_action(self, action):
+        fields = {
+            'Action': action,
+            }
+        content = forms.generate(fields)
+        page = self.rt._do('ticket/%s/take' % self.id, content=content)
+        return page
+
+    def take(self):
+        return self._ticket_action('take')
+    def untake(self):
+        return self._ticket_action('untake')
+    def steal(self):
+        return self._ticket_action('steal')
+
     def get_attachment_ids(self):
         """Return a list of attachment ids for this ticket"""
         page = self.rt._do('ticket/%s/attachments' % self.id)
