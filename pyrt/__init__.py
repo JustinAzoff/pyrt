@@ -29,9 +29,13 @@ pyrt, a client for the Request Tracker REST interface
 
 >>> tickets = rt.ticket.search(search, format='l')
 >>> t = tickets[0]
->>> print t['Created']
+>>> print t
+[pyrt.ticket 1644]
+>>> print t.Created
 Tue Feb 26 12:49:34 2008
->>> print t['Resolved']
+>>> print t.Resolved
+Tue Feb 26 13:26:29 2008
+>>> print t._fields['Resolved']
 Tue Feb 26 13:26:29 2008
 
 >>> for t in rt.ticket.search(rt.ticket.c.cf.building=='Biology'):
