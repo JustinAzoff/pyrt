@@ -7,9 +7,10 @@ setup(name='pyrt',
       version=version,
       description="client for Request Tracker",
       long_description="""\
-pyrt is a client for the request tracker REST interface""",
+pyrt is a client for the request tracker REST interface
+""",
       classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-      keywords='RT REST',
+      keywords='RT REST Request Tracker',
       author='Justin Azoff',
       author_email='JAzoff@uamail.albany.edu',
       url='',

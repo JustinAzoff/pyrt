@@ -1,3 +1,9 @@
+# pyrt/__init__.py
+# Copyright (C) 2007, 2008 Justin Azoff JAzoff@uamail.albany.edu
+#
+# This module is released under the MIT License:
+# http://www.opensource.org/licenses/mit-license.php
+
 """
 pyrt, a client for the Request Tracker REST interface
 
@@ -47,6 +53,9 @@ REST_VERSION = "1.0"
 
 from ticket import *
 
+class RTError(Exception):
+    pass
+
 class RTClient:
     def __init__(self, url, username, password):
         self.url = url
@@ -72,13 +81,17 @@ class RTClient:
         url  = self._make_url(action)
         if not data:
             data = urllib.urlencode(args)
-        res  = self.opener.open(url, data).read()
+        res = self.opener.open(url, data).read()
+        res = self.split_res(res)
 
-        if 'does not exist.' in res:
-            raise ("Ticket does not exist")
-        if 'You are not allowed to display ticket ' in res:
-            raise ("You are not allowed to display this ticket")
-        return res
+        #if 'does not exist.' in res:
+        #    raise RTError("Ticket does not exist")
+        #if 'You are not allowed to display ticket ' in res:
+        #    raise RTError("You are not allowed to display this ticket")
+        out = forms.parse(res)
+        if 'rt_comments' in out[0]:
+            raise RTError(''.join(out[0]['rt_comments']))
+        return out
 
     def split_res(self, res):
         ret = res.split("\n")
@@ -86,7 +99,7 @@ class RTClient:
 
     def login(self):
         self._do('/') #need this to start the session first? O.o
-        return self._do('/', user=self.username, pass_=self.password)
+        return self._do('/search/ticket', query='id=1', user=self.username, pass_=self.password)
 
     def _get_ticket(self):
         return Ticket(self)

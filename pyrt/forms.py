@@ -1,3 +1,14 @@
+# pyrt/forms.py
+# Copyright (C) 2007, 2008 Justin Azoff JAzoff@uamail.albany.edu
+#
+# This module is released under the MIT License:
+# http://www.opensource.org/licenses/mit-license.php
+
+"""This module is for parsing the
+custom key=>value format that RT uses with
+its REST interface
+"""
+
 import re
 whitespace = re.compile("(\s+)")
 def parse_one_form(data):
@@ -13,10 +24,13 @@ def parse_one_form(data):
             continue
         
         if state == 0 and line[0]=='#':
-            while l < len(lines) and line[0]=='#':
-                comments.append(line)
+            while l < len(lines) and line and line[0]=='#':
+                line = lines[l]
+                comments.append(line[2:])
                 l+=1
             state = 1
+        if ':' not in line:
+            continue
 
         field, value = line.split(":", 1)
         if value.startswith(" "): value=value[1:]
@@ -37,7 +51,8 @@ def parse_one_form(data):
         if value=='': value=None
         hash[field] = value 
         l+=1
-    #hash['comments'] = comments
+    if comments:
+        hash['rt_comments'] = comments
     if 'id' in hash:
         hash['id'] = hash['id'].replace('ticket/','')
     return hash

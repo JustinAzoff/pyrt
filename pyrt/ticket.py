@@ -1,3 +1,9 @@
+# pyrt/ticket.py
+# Copyright (C) 2007, 2008 Justin Azoff JAzoff@uamail.albany.edu
+#
+# This module is released under the MIT License:
+# http://www.opensource.org/licenses/mit-license.php
+
 import re
 import forms
 
@@ -43,29 +49,37 @@ class FieldWrapper:
             return Field(attr)
 
 class Ticket(object):
-    def __init__(self, rtclient):
+    def __init__(self, rtclient, fields=None):
         self.rt = rtclient
         self.c = FieldWrapper()
         self.c.cf = FieldWrapper(custom=True)
 
+        self._fields = fields
+        self.id=None
+        if fields:
+            self.id = fields['id']
+
+    def __repr__(self):
+        return "[pyrt.ticket %s]" % self.id
+
     def search(self, query=None,format='',orderby='id'):
         print query
-        page = self.rt._do('search/ticket', query=query, format=format, orderby=orderby)
-        if 'No matching results' in page:
+        data = self.rt._do('search/ticket', query=query, format=format, orderby=orderby)
+        if 'No matching results' in data:
             return []
         
-        data = self.rt.split_res(page)
 
-        if format=='i':
-            return [x for x in data.split() if x]
+        #if format=='i':
+        #    return [x for x in data.split() if x]
         if format=='l':
-            return forms.parse(data)
+            tickets = data
+            return [Ticket(self.rt, fields) for fields in tickets]
 
         if not format:
             ret = []
-            for line in data.splitlines():
-                if line:
-                    ret.append(line.split(': ', 1))
+            data = data[0]
+            for k,v in data.items():
+                ret.append((k,v))
             return ret
  
     def find_by_status(self, status=[], **kwargs):
@@ -115,11 +129,17 @@ class Ticket(object):
         new_ticket = Ticket(self.rt)
         new_ticket.id = id
         return new_ticket
-    def show(self):
+    def show(self, force=False):
         """Return all the fields for this ticket"""
-        page = self.rt._do('ticket/show', id=self.id)
-        data = self.rt.split_res(page)
-        return forms.parse(data)[0]
+
+        if not force and self._fields:
+            return self._fields
+
+        fields = self.rt._do('ticket/show', id=self.id)
+        self._fields = fields[0]
+        return fields
+    cache = show
+
     def create(self, **fields):
         """Create a new ticket
            >>> rt.ticket.new(queue='trouble', subject=subject, requestor=requestor, Text=text,
@@ -185,9 +205,7 @@ class Ticket(object):
 
     def get_attachment_ids(self):
         """Return a list of attachment ids for this ticket"""
-        page = self.rt._do('ticket/%s/attachments' % self.id)
-        data = self.rt.split_res(page)
-        r =  forms.parse(data)
+        r = self.rt._do('ticket/%s/attachments' % self.id)
         if r:
             r = r[0]
             attachments = r['Attachments']
@@ -195,9 +213,7 @@ class Ticket(object):
 
     def get_attachment(self, attachment_id):
         """Fetch a specific attachment associated with this ticket"""
-        page = self.rt._do('ticket/%s/attachments/%d' % (self.id, attachment_id))
-        data = self.rt.split_res(page)
-        r =  forms.parse(data)
+        r = self.rt._do('ticket/%s/attachments/%d' % (self.id, attachment_id))
         if r:
             return r[0]
 
@@ -205,6 +221,20 @@ class Ticket(object):
         for a_id in self.get_attachment_ids():
             yield self.get_attachment(a_id)
     attachments = property(_get_attachments)
+
+    def __getattr__(self, attr):
+        f = self._fields
+        if not f:
+            self.cache()
+
+        if attr in f:
+            return f[attr]
+
+        a = attr.replace("_","-") 
+        if a in f:
+            return f[a]
+
+        raise AttributeError, "'Ticket' object has no attribute '%s'" % attr
 
 
 __all__ = ["Ticket","and_","or_"]
