@@ -137,7 +137,7 @@ class Ticket(object):
 
         fields = self.rt._do('ticket/show', id=self.id)
         self._fields = fields[0]
-        return fields
+        return fields[0]
     cache = show
 
     def create(self, **fields):
@@ -235,6 +235,11 @@ class Ticket(object):
             return f[a]
 
         raise AttributeError, "'Ticket' object has no attribute '%s'" % attr
+    def __getitem__(self, attr):
+        f = self._fields
+        if not f:
+            self.cache()
+        return self._fields[attr]
 
 
 __all__ = ["Ticket","and_","or_"]

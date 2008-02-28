@@ -30,6 +30,7 @@ def parse_one_form(data):
                 l+=1
             state = 1
         if ':' not in line:
+            l+=1
             continue
 
         field, value = line.split(":", 1)
