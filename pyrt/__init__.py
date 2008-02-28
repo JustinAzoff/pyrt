@@ -50,7 +50,6 @@ Tue Feb 26 13:26:29 2008
 
 
 import urllib, urllib2, urlparse
-import simplejson
 
 import cookielib
 REST_VERSION = "1.0"

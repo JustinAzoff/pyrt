@@ -19,7 +19,6 @@ pyrt is a client for the request tracker REST interface
       include_package_data=True,
       zip_safe=True,
       install_requires=[
-          # -*- Extra requirements: -*-
       ],
       entry_points="""
       # -*- Entry points: -*-
