@@ -49,15 +49,17 @@ class FieldWrapper:
             return Field(attr)
 
 class Ticket(object):
-    def __init__(self, rtclient, fields=None):
+    def __init__(self, rtclient, id=None, fields=None):
+        self.id=id
+        self._fields = fields
         self.rt = rtclient
         self.c = FieldWrapper()
         self.c.cf = FieldWrapper(custom=True)
 
-        self._fields = fields
-        self.id=None
+        self._dirty_fields = {}
         if fields:
             self.id = fields['id']
+        self._ticket_initialized = True
 
     def __repr__(self):
         return "[pyrt.ticket %s]" % self.id
@@ -73,7 +75,7 @@ class Ticket(object):
         #    return [x for x in data.split() if x]
         if format=='l':
             tickets = data
-            return [Ticket(self.rt, fields) for fields in tickets]
+            return [Ticket(self.rt, fields=fields) for fields in tickets]
 
         if not format:
             ret = []
@@ -126,8 +128,7 @@ class Ticket(object):
         """Fetch a ticket"""
         if 'ticket/' in str(id):
             id = int(id.replace('ticket/',''))
-        new_ticket = Ticket(self.rt)
-        new_ticket.id = id
+        new_ticket = Ticket(self.rt, id)
         return new_ticket
     def show(self, force=False):
         """Return all the fields for this ticket"""
@@ -167,6 +168,12 @@ class Ticket(object):
         content = forms.generate(fields)
         page = self.rt._do('ticket/edit', content=content)
         return page
+
+    def save(self):
+        fields = {}
+        fields['id'] = self.id
+        fields.update(self._dirty_fields)
+        return self.edit(**fields)
 
     def _comment(self, action, message, cc=None, bcc=None):
         fields = {
@@ -223,9 +230,8 @@ class Ticket(object):
     attachments = property(_get_attachments)
 
     def __getattr__(self, attr):
+        self.cache()
         f = self._fields
-        if not f:
-            self.cache()
 
         if attr in f:
             return f[attr]
@@ -237,9 +243,26 @@ class Ticket(object):
         raise AttributeError, "'Ticket' object has no attribute '%s'" % attr
     def __getitem__(self, attr):
         f = self._fields
-        if not f:
-            self.cache()
-        return self._fields[attr]
+        return f[attr]
 
+
+    def __setattr__(self, attr, val):
+        if not self.__dict__.has_key('_ticket_initialized') or attr == '_fields':
+            # this test allows attributes to be set in the __init__ method
+            return dict.__setattr__(self, attr, val)
+        self.cache()
+        f = self._fields
+        if attr in f:
+            self._dirty_fields[attr] = val
+            f[attr] = val
+            return
+
+        a = attr.replace("_","-") 
+        if a in f:
+            self._dirty_fields[a] = val
+            f[a] = val
+            return
+
+        raise AttributeError, "'Ticket' object has no attribute '%s'" % attr
 
 __all__ = ["Ticket","and_","or_"]
