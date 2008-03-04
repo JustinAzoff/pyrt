@@ -65,7 +65,7 @@ class Ticket(object):
     def search(self, query=None,format='',orderby='id'):
         print query
         data = self.rt._do('search/ticket', query=query, format=format, orderby=orderby)
-        if 'No matching results' in data:
+        if data and not data[0]:
             return []
         
 
