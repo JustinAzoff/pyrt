@@ -25,6 +25,11 @@ class Field:
     def __lt__(self, other):
         return self._compare(self.name, other, '<')
 
+    def __ge__(self, other):
+        return self._compare(self.name, other, '>=')
+    def __le__(self, other):
+        return self._compare(self.name, other, '<=')
+
     def like(self, other):
         return self._compare(self.name, other, 'LIKE')
     contains = like

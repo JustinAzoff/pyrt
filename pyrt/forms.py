@@ -50,6 +50,7 @@ def parse_one_form(data):
         values.insert(0, value)
         value = '\n'.join(values)
         if value=='': value=None
+        if value=='Not set': value=None
         hash[field] = value 
         l+=1
     if comments:
