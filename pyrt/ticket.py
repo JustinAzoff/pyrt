@@ -70,7 +70,7 @@ class Ticket(object):
         return "[pyrt.ticket %s]" % self.id
 
     def search(self, query=None,format='',orderby='id'):
-        print query
+        #print query
         data = self.rt._do('search/ticket', query=query, format=format, orderby=orderby)
         if data and not data[0]:
             return []
