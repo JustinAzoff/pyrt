@@ -14,7 +14,7 @@ pyrt is a client for the request tracker REST interface
       author='Justin Azoff',
       author_email='JAzoff@uamail.albany.edu',
       url='',
-      license='LGPL',
+      license='MIT',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=True,
