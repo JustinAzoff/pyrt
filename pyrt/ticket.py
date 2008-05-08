@@ -175,10 +175,14 @@ class Ticket(object):
         return page
 
     def save(self):
+        if not self._dirty_fields:
+            return
         fields = {}
         fields['id'] = self.id
         fields.update(self._dirty_fields)
-        return self.edit(**fields)
+        ret = self.edit(**fields)
+        self._dirty_fields = {}
+        return ret
 
     def _comment(self, action, message, cc=None, bcc=None):
         fields = {
