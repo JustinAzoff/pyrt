@@ -10,13 +10,16 @@ its REST interface
 """
 
 import re
+
+from odict import OrderedDict
+
 whitespace = re.compile("(\s+)")
 def parse_one_form(data):
     lines = data.split('\n')
     state = 0
     comments = []
     l = 0
-    hash = {}
+    hash = OrderedDict()
     while l < len(lines):
         line = lines[l]
         if not line:

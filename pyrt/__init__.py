@@ -87,10 +87,13 @@ class RTClient:
         res = self.opener.open(url, data).read()
         res = self.split_res(res)
 
+        if 'Your username or password is incorrect' in res:
+            raise RTError("Your username or password is incorrect")
         #if 'does not exist.' in res:
         #    raise RTError("Ticket does not exist")
         #if 'You are not allowed to display ticket ' in res:
         #    raise RTError("You are not allowed to display this ticket")
+        #print res
         out = forms.parse(res)
         if 'rt_comments' in out[0]:
             raise RTError(''.join(out[0]['rt_comments']))

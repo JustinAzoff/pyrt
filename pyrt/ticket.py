@@ -235,6 +235,8 @@ class Ticket(object):
     attachments = property(_get_attachments)
 
     def __getattr__(self, attr):
+        if not self.id:
+            raise AttributeError, "'Ticket' object has no attribute '%s'" % attr
         self.cache()
         f = self._fields
 
