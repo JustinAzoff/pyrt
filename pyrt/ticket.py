@@ -64,7 +64,8 @@ class Ticket(object):
         self._dirty_fields = {}
         if fields:
             self.id = fields['id']
-        self._ticket_initialized = True
+        if id:
+            self._ticket_initialized = True
 
     def __repr__(self):
         return "[pyrt.ticket %s]" % self.id
@@ -157,10 +158,12 @@ class Ticket(object):
 
         self.id = 'new'
         out = self.edit(**fields)
-        match = re.search("200 Ok\n\n.*Ticket (\d+) created",out, re.MULTILINE)
+        msg = out[0]['rt_comments'][0]
+        match = re.search("Ticket (\d+) created",msg)
         if match:
             id = match.groups()[0]
             self.id = id
+            self._ticket_initialized = True
             return self
         raise Exception("Error creating ticket %s" % out)
 
@@ -258,7 +261,7 @@ class Ticket(object):
 
 
     def __setattr__(self, attr, val):
-        if not self.__dict__.has_key('_ticket_initialized') or attr == '_fields':
+        if not self.__dict__.has_key('_ticket_initialized') or attr.startswith("_"):
             # this test allows attributes to be set in the __init__ method
             return dict.__setattr__(self, attr, val)
         self.cache()

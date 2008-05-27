@@ -6,7 +6,8 @@ def check_dict(d, exp):
         assert k in d
         assert k==k and  d[k]==v
         del d[k]
-    assert d == {}
+    #d is an ordered dict
+    assert dict(d) == {}
 
 def do_test_generate_and_parse(idict,exp=None):
     if not exp:
