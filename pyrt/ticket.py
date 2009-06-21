@@ -53,6 +53,8 @@ class FieldWrapper:
         else:
             return Field(attr)
 
+    __call__ = __getattr__
+
 class Ticket(object):
     def __init__(self, rtclient, id=None, fields=None):
         self.id=id
