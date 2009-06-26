@@ -9,7 +9,7 @@ pyrt, a client for the Request Tracker REST interface
 
 >>> from pyrt import RTClient, and_
 >>> rt=RTClient('https://www/rt','justin','xxx')
->>> for t in c.ticket.find_by_status(['stalled']): print t
+>>> for t in rt.ticket.find_by_status(['stalled']): print t
 ... 
 #searches for ('status' = 'stalled')
 ['974',  'blah blah blah']
